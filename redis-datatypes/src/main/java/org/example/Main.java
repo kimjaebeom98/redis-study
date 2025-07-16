@@ -10,7 +10,8 @@ public class Main {
         JedisPool jedisPool = new JedisPool("127.0.0.1", 6379);
         try (var jedis = jedisPool.getResource()) {
             // redisStringDataType(jedis);
-            redisListDataType(jedis);
+            // redisListDataType(jedis);
+            redisSetDataType(jedis);
         }
     }
 
@@ -86,6 +87,42 @@ public class Main {
          */
         jedis.ltrim("jaebeom:friends", 0, 1);
         System.out.println("jaebeom:friends after ltrim = " + jedis.lrange("jaebeom:friends", 0, -1));
+
+    }
+
+    public static void redisSetDataType(Jedis jedis) {
+        /*
+        SADD : 집합에 값을 추가합니다. 중복된 값은 무시됩니다.
+        */
+        jedis.sadd("jaebeom:skills", "java", "python", "redis");
+
+        /*
+        SMEMBERS : 집합의 모든 값을 조회합니다.
+        */
+        System.out.println("jaebeom:skills = " + jedis.smembers("jaebeom:skills"));
+
+        /*
+        SREM : 집합에서 값을 제거합니다.
+        */
+        jedis.srem("jaebeom:skills", "python");
+        System.out.println("jaebeom:skills after srem = " + jedis.smembers("jaebeom:skills"));
+
+        /*
+        SISMEMBER : 집합에 특정 값이 있는지 확인합니다.
+         */
+        System.out.println("Is 'java' a member of jaebeom:skills? " + jedis.sismember("jaebeom:skills", "java"));
+
+        /*
+        SINTERSECTION : 두 집합의 교집합을 구합니다.
+         */
+        jedis.sadd("jaebeom:other_skills", "java", "c++");
+        System.out.println("Intersection of jaebeom:skills and jaebeom:other_skills = " +
+                jedis.sinter("jaebeom:skills", "jaebeom:other_skills"));
+
+        /*
+        SCARD : 집합의 크기를 반환합니다.
+         */
+        System.out.println("Size of jaebeom:skills = " + jedis.scard("jaebeom:skills"));
 
     }
 }
