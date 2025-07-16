@@ -9,7 +9,8 @@ public class Main {
     public static void main(String[] args) {
         JedisPool jedisPool = new JedisPool("127.0.0.1", 6379);
         try (var jedis = jedisPool.getResource()) {
-            redisStringDataType(jedis);
+            // redisStringDataType(jedis);
+            redisListDataType(jedis);
         }
     }
 
@@ -54,4 +55,37 @@ public class Main {
         System.out.println("jaebeom:age after decrby = " + jedis.get("jaebeom:age"));
     }
 
+    public static void redisListDataType(Jedis jedis) {
+        /*
+        LPUSH : 리스트의 왼쪽에 값을 추가합니다.
+        RPUSH : 리스트의 오른쪽에 값을 추가합니다.
+        */
+        jedis.lpush("jaebeom:friends", "alice");
+        jedis.rpush("jaebeom:friends", "bob");
+
+        /*
+        LRANGE : 리스트의 특정 범위의 값을 조회합니다.
+        */
+        System.out.println("jaebeom:friends = " + jedis.lrange("jaebeom:friends", 0, -1));
+
+        /*
+        LPOP : 리스트의 왼쪽에서 값을 제거하고 반환합니다.
+        RPOP : 리스트의 오른쪽에서 값을 제거하고 반환합니다.
+        */
+        System.out.println("LPOP jaebeom:friends = " + jedis.lpop("jaebeom:friends"));
+        System.out.println("RPOP jaebeom:friends = " + jedis.rpop("jaebeom:friends"));
+
+        /*
+        LLEN : 리스트의 길이를 반환합니다.
+         */
+        jedis.lpush("jaebeom:friends", "alice", "bob", "charlie");
+        System.out.println("Length of jaebeom:friends = " + jedis.llen("jaebeom:friends"));
+
+        /*
+        LTRIM : 리스트의 특정 범위의 값을 잘라냅니다.
+         */
+        jedis.ltrim("jaebeom:friends", 0, 1);
+        System.out.println("jaebeom:friends after ltrim = " + jedis.lrange("jaebeom:friends", 0, -1));
+
+    }
 }
