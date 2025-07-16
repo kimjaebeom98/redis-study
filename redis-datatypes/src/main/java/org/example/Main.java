@@ -11,7 +11,8 @@ public class Main {
         try (var jedis = jedisPool.getResource()) {
             // redisStringDataType(jedis);
             // redisListDataType(jedis);
-            redisSetDataType(jedis);
+            // redisSetDataType(jedis);
+            redisHashDataType(jedis);
         }
     }
 
@@ -124,5 +125,35 @@ public class Main {
          */
         System.out.println("Size of jaebeom:skills = " + jedis.scard("jaebeom:skills"));
 
+    }
+
+    public static void redisHashDataType(Jedis jedis) {
+        /*
+        HSET : 해시에 필드와 값을 추가합니다.
+        */
+        jedis.hset("jaebeom:profile", "name", "jaebeom");
+        jedis.hset("jaebeom:profile", "age", "11");
+
+        /*
+        HGET : 해시에서 특정 필드의 값을 조회합니다.
+        */
+        System.out.println("jaebeom:profile name = " + jedis.hget("jaebeom:profile", "name"));
+
+        /*
+        HGETALL : 해시의 모든 필드와 값을 조회합니다.
+        */
+        System.out.println("jaebeom:profile = " + jedis.hgetAll("jaebeom:profile"));
+
+        /*
+        HINCRBY : 해시의 특정 필드에 저장된 숫자 값을 1 증가시킵니다.
+         */
+        jedis.hincrBy("jaebeom:profile", "age", 10);
+        System.out.println("jaebeom:profile after hincrby = " + jedis.hgetAll("jaebeom:profile"));
+
+        /*
+        HDEL : 해시에서 특정 필드를 제거합니다.
+         */
+        jedis.hdel("jaebeom:profile", "age");
+        System.out.println("jaebeom:profile after hdel = " + jedis.hgetAll("jaebeom:profile"));
     }
 }
