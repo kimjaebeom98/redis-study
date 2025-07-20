@@ -1,7 +1,11 @@
 package org.example;
 
+import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.params.GeoSearchParam;
+import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.resps.Tuple;
 
 import java.util.List;
@@ -16,7 +20,8 @@ public class Main {
             // redisListDataType(jedis);
             // redisSetDataType(jedis);
             // redisHashDataType(jedis);
-            redisSortedSetDataType(jedis);
+            // redisSortedSetDataType(jedis);
+            redisGeospatialDataType(jedis);
         }
     }
 
@@ -203,5 +208,31 @@ public class Main {
         ZCARD : 정렬된 집합의 크기를 반환합니다.
          */
         System.out.println("Size of jaebeom:scores = " + jedis.zcard("jaebeom:scores"));
+    }
+
+    public static void redisGeospatialDataType(Jedis jedis) {
+        /*
+        GEOADD : 지리적 위치를 추가합니다. (경도, 위도, 이름)
+        */
+        jedis.geoadd("jaebeom:locations", 126.9784, 37.5665, "Seoul");
+        jedis.geoadd("jaebeom:locations", 127.0246, 37.5326, "Incheon");
+        jedis.geoadd("jaebeom:locations", 128.5916, 35.1796, "Busan");
+
+        /*
+        GEODIST : 두 위치 간의 거리를 조회합니다.
+         */
+        System.out.println("Distance between Seoul and Busan = " +
+                jedis.geodist("jaebeom:locations", "Seoul", "Busan", GeoUnit.KM));
+
+        /*
+        GEORADIUS : 특정 위치를 중심으로 반경 내의 위치를 조회합니다.
+         */
+        List<GeoRadiusResponse> responses = jedis.geosearch("jaebeom:locations", new GeoSearchParam().fromLonLat(new GeoCoordinate(126.9784, 37.5665))
+                .byRadius(300, GeoUnit.KM)
+                .withCoord());
+
+        responses.forEach(response -> System.out.println("%f, %f : %s"
+                .formatted(response.getCoordinate().getLongitude(), response.getCoordinate().getLatitude(), response.getMemberByString())));
+
     }
 }
