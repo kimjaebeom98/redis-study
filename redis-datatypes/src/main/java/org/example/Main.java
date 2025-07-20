@@ -2,6 +2,9 @@ package org.example;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.resps.Tuple;
+
+import java.util.List;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
@@ -12,7 +15,8 @@ public class Main {
             // redisStringDataType(jedis);
             // redisListDataType(jedis);
             // redisSetDataType(jedis);
-            redisHashDataType(jedis);
+            // redisHashDataType(jedis);
+            redisSortedSetDataType(jedis);
         }
     }
 
@@ -155,5 +159,49 @@ public class Main {
          */
         jedis.hdel("jaebeom:profile", "age");
         System.out.println("jaebeom:profile after hdel = " + jedis.hgetAll("jaebeom:profile"));
+    }
+
+    public static void redisSortedSetDataType(Jedis jedis) {
+        /*
+        ZADD : 정렬된 집합에 값을 추가합니다. 점수(score)를 함께 저장합니다.
+        */
+        jedis.zadd("jaebeom:scores", 100.0, "alice");
+        jedis.zadd("jaebeom:scores", 200.0, "bob");
+        jedis.zadd("jaebeom:scores", 500.0, "jb");
+        jedis.zadd("jaebeom:scores", 300.0, "charlie");
+
+        /*
+        ZRANGE : 정렬된 집합의 특정 범위의 값을 조회합니다.
+        */
+        System.out.println("jaebeom:scores = " + jedis.zrange("jaebeom:scores", 0, -1));
+
+        /*
+        ZRANGE WITHSCORES : 정렬된 집합의 특정 범위의 값을 점수와 함께 조회합니다.
+         */
+        List<Tuple> tuples = jedis.zrangeWithScores("jaebeom:scores", 0, Long.MAX_VALUE);
+        tuples.forEach(i-> System.out.println("Member: " + i.getElement() + ", Score: " + i.getScore()));
+
+        /*
+        ZREM : 정렬된 집합에서 값을 제거합니다.
+         */
+        jedis.zrem("jaebeom:scores", "alice");
+        System.out.println("jaebeom:scores after zrem = " + jedis.zrange("jaebeom:scores", 0, -1));
+
+        /*
+        ZINCRBY : 정렬된 집합에서 특정 값의 점수를 증가시킵니다.
+         */
+        jedis.zincrby("jaebeom:scores", 600.0, "bob");
+        jedis.zrangeByScoreWithScores("jaebeom:scores", 0, Long.MAX_VALUE)
+                .forEach(i -> System.out.println("Member: " + i.getElement() + ", Score: " + i.getScore()));
+
+        /*
+        ZSCORE : 정렬된 집합에서 특정 값의 점수를 조회합니다.
+         */
+        System.out.println("Score of bob in jaebeom:scores = " + jedis.zscore("jaebeom:scores", "bob"));
+
+        /*
+        ZCARD : 정렬된 집합의 크기를 반환합니다.
+         */
+        System.out.println("Size of jaebeom:scores = " + jedis.zcard("jaebeom:scores"));
     }
 }
