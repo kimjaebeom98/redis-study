@@ -1,5 +1,6 @@
 package com.example.bootredis.controller;
 
+import com.example.bootredis.domain.RedisHashUser;
 import com.example.bootredis.domain.User;
 import com.example.bootredis.repository.UserRepository;
 import com.example.bootredis.service.UserService;
@@ -18,6 +19,12 @@ public class UserController {
     public User getUser(@PathVariable Long id) {
         // 사용자 ID로 사용자 정보를 조회
         return userService.getUserById(id);
+    }
+
+    @GetMapping("/redis-users/{id}")
+    public RedisHashUser getRedisHashUser(@PathVariable Long id) {
+        // 사용자 ID로 사용자 정보를 조회
+        return userService.getRedisHashUserById(id);
     }
 
 

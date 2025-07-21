@@ -1,6 +1,8 @@
 package com.example.bootredis.service;
 
+import com.example.bootredis.domain.RedisHashUser;
 import com.example.bootredis.domain.User;
+import com.example.bootredis.repository.RedisHashUserRepository;
 import com.example.bootredis.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -12,6 +14,7 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final RedisHashUserRepository redisHashUserRepository;
     private final RedisTemplate<String, User> redisTemplate;
     private final RedisTemplate<String, Object> genericRedisTemplate;
 
@@ -31,6 +34,26 @@ public class UserService {
         // 조회한 사용자 정보를 Redis에 저장
         genericRedisTemplate.opsForValue().set(key, user, Duration.ofSeconds(30)); // 30초 동안 캐시 유지
         return user;
+    }
+
+    public RedisHashUser getRedisHashUserById(Long id) {
+        var redisHashedUser = redisHashUserRepository.findById(id).orElseGet(() -> {
+            // Redis에 해당 사용자가 없으면 DB에서 조회
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+            // RedisHashUser 객체 생성
+            RedisHashUser redisHashUser = RedisHashUser.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .email(user.getEmail())
+                    .createdAt(user.getCreatedAt())
+                    .updatedAt(user.getUpdatedAt())
+                    .build();
+            // Redis에 저장
+            redisHashUserRepository.save(redisHashUser);
+            return redisHashUser;
+        });
+        return redisHashedUser;
     }
 
 }
