@@ -27,5 +27,11 @@ public class UserController {
         return userService.getRedisHashUserById(id);
     }
 
+    @GetMapping("/users/caches/{id}")
+    public User getCacheUser(@PathVariable Long id) {
+        // 사용자 ID로 사용자 정보를 조회
+        return userService.getCacheUserById(id);
+    }
+
 
 }

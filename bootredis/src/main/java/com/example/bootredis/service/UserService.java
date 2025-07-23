@@ -5,14 +5,19 @@ import com.example.bootredis.domain.User;
 import com.example.bootredis.repository.RedisHashUserRepository;
 import com.example.bootredis.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
+import static com.example.bootredis.config.CacheConfig.CACHE1;
+
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
     private final UserRepository userRepository;
     private final RedisHashUserRepository redisHashUserRepository;
     private final RedisTemplate<String, User> redisTemplate;
@@ -54,6 +59,13 @@ public class UserService {
             return redisHashUser;
         });
         return redisHashedUser;
+    }
+
+    @Cacheable(cacheNames = CACHE1, key = "'users:' + #id")
+    public User getCacheUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
     }
 
 }
